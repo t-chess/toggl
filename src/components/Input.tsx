@@ -1,6 +1,6 @@
 type TextInputProps = {
     type?: string
-    label: string
+    label?: string
     name: string
     value: string
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -10,9 +10,9 @@ type TextInputProps = {
   export const Input = ({ type = 'text', label, name, value, onChange, placeholder }: TextInputProps) => {
     return (
       <div className="form-control">
-        <label className="label">
+        {label&&(<label className="label">
           <span className="label-text">{label}</span>
-        </label>
+        </label>)}
         <input
           type={type}
           name={name}

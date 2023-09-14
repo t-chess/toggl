@@ -3,31 +3,26 @@ import { TimeEntry } from "@/app/utils/types";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Input } from "../Input";
-import { formatDate } from "@/app/utils/formatDate";
-import { createTE } from "@/clientCalls/timeEntries";
+import { formatDate, getHtmlDatetime } from "@/app/utils/formatDate";
+import { createTE, updateTe } from "@/clientCalls/timeEntries";
 import { ProjectSelector } from "../ProjectSelector";
-
-const initValue: TimeEntry = {
-    end: '',
-    start: '',
-    task: '',
-    project_id: 4,
-    user_name: process.env.NEXT_PUBLIC_USERNAME
-  }
+import { initTEValue } from "@/app/time/page";
   
-  export const TimeForm = () => {
+  export const TimeForm = (TE:TimeEntry) => {
     const router = useRouter()
-    const [timeEntry, setTimeEntry] = useState<TimeEntry>(initValue)
+    const [timeEntry, setTimeEntry] = useState<TimeEntry>(TE)
   
+    if (TE.id===undefined) {
     useEffect(() => {
-      if (timeEntry.start && timeEntry.end && timeEntry.task) {
-        createTE(timeEntry)
-          .then(() => {
-            setTimeEntry(initValue)
-            router.refresh()
-          })
-      }
-    }, [router, timeEntry])
+        if (timeEntry.start  !== '' && timeEntry.end !== '' && timeEntry.task  !== '') {
+          createTE(timeEntry)
+            .then(() => {
+              setTimeEntry(initTEValue)
+              router.refresh()
+            })
+        }
+      }, [router, timeEntry])
+    } 
   
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const {name, value} = e.target
@@ -38,23 +33,37 @@ const initValue: TimeEntry = {
       const {name, value} = e.target
       setTimeEntry({ ...timeEntry, [name]: value})
     }
+
+    const update = async () => {
+      const res = await updateTe(timeEntry);
+      if (res.ok) {
+          router.refresh()
+      }
+
+    }
     return (
       <form className="flex flex-wrap items-end">
         <Input label="Task" name="task" value={timeEntry.task} onChange={handleChange} />
-        <Input label="Start" name="start" value={timeEntry.start} onChange={handleChange} type="datetime-local" />
-        <Input label="End" name="end" value={timeEntry.end} onChange={handleChange} type="datetime-local" />
+        <Input label="Start" name="start" value={timeEntry.id===undefined?timeEntry.start:getHtmlDatetime(timeEntry.start)} onChange={handleChange} type="datetime-local" />
+        <Input label="End" name="end" value={timeEntry.id===undefined?timeEntry.end:getHtmlDatetime(timeEntry.end)} onChange={handleChange} type="datetime-local" />
         <ProjectSelector name="project_id" value={timeEntry.project_id} handleChange={handleSelectChange} />
-        {timeEntry.start && (
+        {TE.id!==undefined? (
+          <button
+            className="btn btn-neutral"
+            disabled={!(timeEntry.task&&timeEntry.start&&timeEntry.end&&timeEntry.project_id)}
+            onClick={(e) => {e.preventDefault();update()}}
+          >Save</button>
+        ) : 
+        timeEntry.start ? (
           <button
             className="btn btn-neutral"
             disabled={timeEntry.end !== ''}
-            onClick={() => {setTimeEntry({...timeEntry, end: formatDate(new Date())})}}
+            onClick={(e) => {e.preventDefault();setTimeEntry({...timeEntry, end: formatDate(new Date())})}}
           >Stop</button>
-        )}
-        {!timeEntry.start && (
+        ) : (
           <button
             className="btn btn-neutral"
-            onClick={() => {setTimeEntry({...timeEntry, start: formatDate(new Date())})}}
+            onClick={(e) => {e.preventDefault();setTimeEntry({...timeEntry, start: formatDate(new Date())})}}
           >Start</button>
         )}
       </form>

@@ -1,13 +1,13 @@
 import { createProject, getAllProjects, updateProject } from '@/serverCalls/projects'
 import { revalidatePath } from 'next/cache'
 import { generateUrl } from '@/app/utils/generate_urls'
-import { NextResponse } from 'next/server'
+import Server from 'next/server';
 
 export async function GET() {
   const res = await getAllProjects()
 
   const data = await res.json()
-  return NextResponse.json({ data })
+  return Server.NextResponse.json({ data })
 }
 
 export async function POST(request: Request) {
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   }
 
   const data = await res.json()
-  return NextResponse.json({ data })
+  return Server.NextResponse.json({ data })
 }
 
 export async function PUT(request: Request) {
@@ -29,5 +29,5 @@ export async function PUT(request: Request) {
   }
 
   const data = await res.json()
-  return NextResponse.json({ data })
+  return Server.NextResponse.json({ data })
 }

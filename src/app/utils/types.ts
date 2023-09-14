@@ -11,5 +11,5 @@ export type TimeEntry = {
     task: string
     start: string
     end: string
-    user_name?: string
+    project_name?: string
   }
